@@ -33,6 +33,11 @@
 	font: 500 11px/1.2 var(--font-body);
 }
 
+.vb-tag__num {
+	color: var(--a-violet);
+	font-weight: 600;
+}
+
 .vb-tag--light {
 	border-color: transparent;
 }

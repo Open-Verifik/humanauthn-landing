@@ -57,6 +57,12 @@ function hero(t) {
 	</section>`;
 }
 
+/** "01 → Digital ID": number + arrow in violet, label in ink (Figma). */
+function tag(text) {
+	const m = /^(\d+\s*→)\s*(.*)$/.exec(text);
+	return m ? `<span class="vb-tag__num">${esc(m[1])}</span>${esc(m[2])}` : esc(text);
+}
+
 function trioMock(card, i) {
 	const m = card.mock;
 	if (i === 0) {
@@ -100,7 +106,7 @@ function trio(t) {
 						(c, i) => `
 					<article class="vb-trio__card">
 						<div class="vb-trio__stage">${trioMock(c, i)}</div>
-						<span class="vb-tag">${esc(c.tag)}</span>
+						<span class="vb-tag">${tag(c.tag)}</span>
 						<h3>${esc(c.title)}</h3>
 						<p>${esc(c.body)}</p>
 					</article>`,
@@ -154,7 +160,7 @@ function products(t, links) {
 						(c) => `
 					<article class="vb-product">
 						<img src="/img/${c.img}.webp" alt="" width="1000" height="560" loading="lazy" />
-						<span class="vb-tag vb-tag--light">${esc(c.tag)}</span>
+						<span class="vb-tag vb-tag--light">${tag(c.tag)}</span>
 						<h3>${esc(c.title)}</h3>
 						<p>${esc(c.body)}</p>
 						<ul>${c.bullets.map((b) => `<li>${esc(b)}</li>`).join("")}</ul>
@@ -349,7 +355,7 @@ function security(t, links) {
 					(c) => `
 				<article class="vb-sec__card">
 					<div class="vb-sec__stage">${securityArt(c)}</div>
-					<span class="vb-tag">${esc(c.tag)}</span>
+					<span class="vb-tag">${tag(c.tag)}</span>
 					<h3>${esc(c.title)}</h3>
 					<p>${esc(c.body)}</p>
 				</article>`,
