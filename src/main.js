@@ -6,10 +6,29 @@ import { buildBrief, renderB } from "./pageB.js";
 import "./a.css";
 import "./b.css";
 
+const VARIANT_COOKIE = "ha_variant";
 const LANG_KEY = "ha_lang";
 const VARIANTS = ["a", "b"];
 
 /* ---------- storage helpers (never let storage errors break the page) ---------- */
+
+function readCookie(name) {
+	try {
+		const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+		return match ? decodeURIComponent(match[1]) : null;
+	} catch {
+		return null;
+	}
+}
+
+function writeCookie(name, value, days) {
+	try {
+		const expires = new Date(Date.now() + days * 864e5).toUTCString();
+		document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+	} catch {
+		/* ignore */
+	}
+}
 
 function readStorage(key) {
 	try {
@@ -33,13 +52,28 @@ function writeStorage(key, value) {
  * URL structure for the experiment (Johan, #1157):
  *   A: https://humanauthn.com/            (primary canonical URL)
  *   B: https://humanauthn.com/?variant=b  (canonical points to /)
- * Old QA links (?v=a|b, /a, /b) still work and are rewritten to that structure.
+ *
+ * Visitors to / get a sticky 50/50 split (ha_variant cookie, 90 days); returning visitors keep their variant.
+ * ?variant=a|b (and old links ?v=a|b, /a, /b) force a variant without saving it, so QA links don't skew the split.
+ * The address bar is then rewritten to the structure above.
  */
 function resolveVariant() {
 	const url = new URL(window.location.href);
 	const fromQuery = (url.searchParams.get("variant") || url.searchParams.get("v") || "").toLowerCase();
 	const fromPath = url.pathname.replace(/\/+$/, "").split("/").pop()?.toLowerCase();
-	const variant = VARIANTS.includes(fromQuery) ? fromQuery : VARIANTS.includes(fromPath) ? fromPath : "a";
+
+	let variant;
+	let forced = true;
+	if (VARIANTS.includes(fromQuery)) variant = fromQuery;
+	else if (VARIANTS.includes(fromPath)) variant = fromPath;
+	else {
+		forced = false;
+		variant = readCookie(VARIANT_COOKIE);
+		if (!VARIANTS.includes(variant)) {
+			variant = Math.random() < 0.5 ? "a" : "b";
+			writeCookie(VARIANT_COOKIE, variant, 90);
+		}
+	}
 
 	url.searchParams.delete("v");
 	url.searchParams.delete("variant");
@@ -47,7 +81,10 @@ function resolveVariant() {
 	if (variant === "b") url.searchParams.set("variant", "b");
 	if (url.href !== window.location.href) window.history.replaceState(null, "", url);
 
-	return { variant };
+	// A returning visitor reloading their own variant's URL (e.g. B on /?variant=b) is not a forced view.
+	if (forced && readCookie(VARIANT_COOKIE) === variant) forced = false;
+
+	return { variant, forced };
 }
 
 /* ---------- language ---------- */
@@ -236,4 +273,4 @@ document.addEventListener("keydown", (event) => {
 });
 
 render();
-track("ha_variant_view");
+track("ha_variant_view", { forced: state.forced });
