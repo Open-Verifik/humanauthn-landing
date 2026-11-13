@@ -49,23 +49,42 @@ function writeStorage(key, value) {
 /* ---------- A/B variant ---------- */
 
 /**
- * Resolves the A/B variant: ?v=a|b, then /a or /b, then the sticky cookie, then a 50/50 draw.
- * Forced variants (query or path) are not written to the cookie, so QA links don't skew the split.
+ * URL structure for the experiment (Johan, #1157):
+ *   A: https://humanauthn.com/            (primary canonical URL)
+ *   B: https://humanauthn.com/?variant=b  (canonical points to /)
+ *
+ * Visitors to / get a sticky 50/50 split (ha_variant cookie, 90 days); returning visitors keep their variant.
+ * ?variant=a|b (and old links ?v=a|b, /a, /b) force a variant without saving it, so QA links don't skew the split.
+ * The address bar is then rewritten to the structure above.
  */
 function resolveVariant() {
-	const params = new URLSearchParams(window.location.search);
-	const fromQuery = (params.get("v") || params.get("variant") || "").toLowerCase();
-	if (VARIANTS.includes(fromQuery)) return { variant: fromQuery, forced: true };
+	const url = new URL(window.location.href);
+	const fromQuery = (url.searchParams.get("variant") || url.searchParams.get("v") || "").toLowerCase();
+	const fromPath = url.pathname.replace(/\/+$/, "").split("/").pop()?.toLowerCase();
 
-	const fromPath = window.location.pathname.replace(/\/+$/, "").split("/").pop()?.toLowerCase();
-	if (VARIANTS.includes(fromPath)) return { variant: fromPath, forced: true };
+	let variant;
+	let forced = true;
+	if (VARIANTS.includes(fromQuery)) variant = fromQuery;
+	else if (VARIANTS.includes(fromPath)) variant = fromPath;
+	else {
+		forced = false;
+		variant = readCookie(VARIANT_COOKIE);
+		if (!VARIANTS.includes(variant)) {
+			variant = Math.random() < 0.5 ? "a" : "b";
+			writeCookie(VARIANT_COOKIE, variant, 90);
+		}
+	}
 
-	const fromCookie = readCookie(VARIANT_COOKIE);
-	if (VARIANTS.includes(fromCookie)) return { variant: fromCookie, forced: false };
+	url.searchParams.delete("v");
+	url.searchParams.delete("variant");
+	if (VARIANTS.includes(fromPath)) url.pathname = url.pathname.replace(/\/(a|b)\/*$/i, "/");
+	if (variant === "b") url.searchParams.set("variant", "b");
+	if (url.href !== window.location.href) window.history.replaceState(null, "", url);
 
-	const drawn = Math.random() < 0.5 ? "a" : "b";
-	writeCookie(VARIANT_COOKIE, drawn, 90);
-	return { variant: drawn, forced: false };
+	// A returning visitor reloading their own variant's URL (e.g. B on /?variant=b) is not a forced view.
+	if (forced && readCookie(VARIANT_COOKIE) === variant) forced = false;
+
+	return { variant, forced };
 }
 
 /* ---------- language ---------- */

@@ -189,7 +189,6 @@ function custody(t) {
 				<h2 class="va-h2 vb-stack"><span>${esc(c.title1)}</span><span>${esc(c.title2)}</span></h2>
 				<p class="vb-body">${esc(c.p1)}</p>
 				<p class="vb-body">${esc(c.p2)}</p>
-				<a class="va-btn va-btn--violet va-btn--lg vb-mt" href="#building-blocks" data-track="building_blocks">${esc(c.cta)} ${IA.circleChevron}</a>
 			</div>
 		</div>
 	</section>`;
@@ -222,7 +221,6 @@ function records(t) {
 
 function standards(t, links) {
 	const st = t.standards;
-	const b = t.blocks;
 	return `
 	<section class="va-section" id="integration">
 		<div class="va-container">
@@ -245,23 +243,6 @@ function standards(t, links) {
 							<h3>${esc(c.title)}</h3>
 							<p>${esc(c.body)}</p>
 						</article>`,
-						)
-						.join("")}
-				</div>
-			</div>
-			<div class="vb-blocks" id="building-blocks">
-				<p class="va-eyebrow va-eyebrow--tint"><span class="va-pill__new">${esc(b.badgeNew)}</span>${IA.arrow}<span>${esc(b.eyebrow)}</span></p>
-				<h2 class="va-h2">${esc(b.title)}</h2>
-				<div class="vb-blocks__grid">
-					${b.cols
-						.map(
-							(c) => `
-						<div class="vb-block">
-							<span class="vb-int__icon">${IB[c.icon]}</span>
-							<span class="va-int__tag">${esc(c.tag)}</span>
-							<h3>${esc(c.title)}</h3>
-							<ul>${c.items.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
-						</div>`,
 						)
 						.join("")}
 				</div>

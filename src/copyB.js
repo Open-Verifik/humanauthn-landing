@@ -86,7 +86,6 @@ export const COPY_B = {
 			title2: "Give self-custody control",
 			p1: "Digital identity should be something a person can hold and present. HumanAuthn connects portable credentials, biometric authentication and cryptographic protection in one architecture.",
 			p2: "The individual presents or queries credentials from the database. The issuer stands behind its claims. Your application verifies the proof and applies its access policies.",
-			cta: "Explore the building blocks",
 		},
 		records: {
 			eyebrow: "Protection beyond the login",
@@ -109,16 +108,6 @@ export const COPY_B = {
 				{ icon: "user", tag: "AUTHENTICATE", title: "Passkeys + HumanAuthn", body: "Verify the registered credential and the person enrolled in HumanAuthn." },
 				{ icon: "doc", tag: "FEDERATE", title: "SAML / OpenID Connect", body: "Communicate the authentication result to your application." },
 				{ icon: "checkSquare", tag: "AUTHORIZE", title: "Your application", body: "Validate the result and apply your permissions and business rules." },
-			],
-		},
-		blocks: {
-			badgeNew: "New",
-			eyebrow: "The building blocks",
-			title: "A complete identity story.",
-			cols: [
-				{ icon: "userPlus", tag: "01 → CONNECT", title: "Customer access", items: ["Single sign-on + HumanAuthn", "Face recognition", "Biometric authentication"] },
-				{ icon: "shieldCheck", tag: "02 → ISSUE", title: "Portable identity", items: ["Verifiable credentials", "Self-sovereign identity", "ID issuance · Digital identity / eID"] },
-				{ icon: "qr", tag: "03 → PROTECT", title: "Cryptographic control", items: ["Public Key Infrastructure (PKI)", "Data encryption", "Data portability"] },
 			],
 		},
 		compare: {
@@ -314,7 +303,6 @@ export const COPY_B = {
 			title2: "Dale el control en autocustodia",
 			p1: "La identidad digital debería ser algo que una persona pueda guardar y presentar. HumanAuthn une credenciales portables, autenticación biométrica y protección criptográfica en una sola arquitectura.",
 			p2: "La persona presenta o consulta sus credenciales. El emisor respalda lo que afirma. Tu aplicación verifica la prueba y aplica sus políticas de acceso.",
-			cta: "Explora los componentes",
 		},
 		records: {
 			eyebrow: "Protección más allá del login",
@@ -337,16 +325,6 @@ export const COPY_B = {
 				{ icon: "user", tag: "AUTENTICAR", title: "Passkeys + HumanAuthn", body: "Verifica la credencial registrada y a la persona registrada en HumanAuthn." },
 				{ icon: "doc", tag: "FEDERAR", title: "SAML / OpenID Connect", body: "Comunica el resultado de la autenticación a tu aplicación." },
 				{ icon: "checkSquare", tag: "AUTORIZAR", title: "Tu aplicación", body: "Valida el resultado y aplica tus permisos y reglas de negocio." },
-			],
-		},
-		blocks: {
-			badgeNew: "Nuevo",
-			eyebrow: "Los componentes",
-			title: "Una historia de identidad completa.",
-			cols: [
-				{ icon: "userPlus", tag: "01 → CONECTAR", title: "Acceso de clientes", items: ["Inicio de sesión único + HumanAuthn", "Reconocimiento facial", "Autenticación biométrica"] },
-				{ icon: "shieldCheck", tag: "02 → EMITIR", title: "Identidad portable", items: ["Credenciales verificables", "Identidad autosoberana", "Emisión de identidades · Identidad digital / eID"] },
-				{ icon: "qr", tag: "03 → PROTEGER", title: "Control criptográfico", items: ["Infraestructura de llave pública (PKI)", "Cifrado de datos", "Portabilidad de datos"] },
 			],
 		},
 		compare: {

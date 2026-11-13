@@ -21,8 +21,17 @@ Both variants follow the HumanAuthn Figma file.
 Images in `public/img/` were taken from the Figma canvas (export is disabled for viewers). Swap them for the original
 exports when the design team sends them.
 
-Resolution order: `?v=a|b` → path `/a` or `/b` → `ha_variant` cookie (90 days) → 50/50 draw.
-Forced variants (query or path) are not saved, so QA links don't skew the split.
+URL structure for the experiment:
+
+| Variant | URL | Canonical |
+| --- | --- | --- |
+| A | `https://humanauthn.com/` | `https://humanauthn.com/` (primary) |
+| B | `https://humanauthn.com/?variant=b` | `https://humanauthn.com/` |
+
+Both variants share the same meta title and description (`META` in `src/i18n.js`) and the same canonical URL.
+Visitors to `/` get a sticky 50/50 split (`ha_variant` cookie, 90 days), so returning visitors keep seeing the same
+version; the address bar shows `?variant=b` for B. `?variant=a|b` forces a variant without saving it, so QA links don't
+skew the split. Old links (`?v=a|b`, `/a`, `/b`) still work and are rewritten to this structure.
 
 Every page view pushes `ha_variant_view` to `window.dataLayer` (and `gtag` if present) with `ha_variant` and `ha_lang`.
 CTA clicks push `ha_cta_click` with the `cta` name. Add the GTM/GA4 snippet to `index.html` to collect them.
