@@ -6,29 +6,10 @@ import { buildBrief, renderB } from "./pageB.js";
 import "./a.css";
 import "./b.css";
 
-const VARIANT_COOKIE = "ha_variant";
 const LANG_KEY = "ha_lang";
 const VARIANTS = ["a", "b"];
 
 /* ---------- storage helpers (never let storage errors break the page) ---------- */
-
-function readCookie(name) {
-	try {
-		const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
-		return match ? decodeURIComponent(match[1]) : null;
-	} catch {
-		return null;
-	}
-}
-
-function writeCookie(name, value, days) {
-	try {
-		const expires = new Date(Date.now() + days * 864e5).toUTCString();
-		document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
-	} catch {
-		/* ignore */
-	}
-}
 
 function readStorage(key) {
 	try {
@@ -49,23 +30,24 @@ function writeStorage(key, value) {
 /* ---------- A/B variant ---------- */
 
 /**
- * Resolves the A/B variant: ?v=a|b, then /a or /b, then the sticky cookie, then a 50/50 draw.
- * Forced variants (query or path) are not written to the cookie, so QA links don't skew the split.
+ * URL structure for the experiment (Johan, #1157):
+ *   A: https://humanauthn.com/            (primary canonical URL)
+ *   B: https://humanauthn.com/?variant=b  (canonical points to /)
+ * Old QA links (?v=a|b, /a, /b) still work and are rewritten to that structure.
  */
 function resolveVariant() {
-	const params = new URLSearchParams(window.location.search);
-	const fromQuery = (params.get("v") || params.get("variant") || "").toLowerCase();
-	if (VARIANTS.includes(fromQuery)) return { variant: fromQuery, forced: true };
+	const url = new URL(window.location.href);
+	const fromQuery = (url.searchParams.get("variant") || url.searchParams.get("v") || "").toLowerCase();
+	const fromPath = url.pathname.replace(/\/+$/, "").split("/").pop()?.toLowerCase();
+	const variant = VARIANTS.includes(fromQuery) ? fromQuery : VARIANTS.includes(fromPath) ? fromPath : "a";
 
-	const fromPath = window.location.pathname.replace(/\/+$/, "").split("/").pop()?.toLowerCase();
-	if (VARIANTS.includes(fromPath)) return { variant: fromPath, forced: true };
+	url.searchParams.delete("v");
+	url.searchParams.delete("variant");
+	if (VARIANTS.includes(fromPath)) url.pathname = url.pathname.replace(/\/(a|b)\/*$/i, "/");
+	if (variant === "b") url.searchParams.set("variant", "b");
+	if (url.href !== window.location.href) window.history.replaceState(null, "", url);
 
-	const fromCookie = readCookie(VARIANT_COOKIE);
-	if (VARIANTS.includes(fromCookie)) return { variant: fromCookie, forced: false };
-
-	const drawn = Math.random() < 0.5 ? "a" : "b";
-	writeCookie(VARIANT_COOKIE, drawn, 90);
-	return { variant: drawn, forced: false };
+	return { variant };
 }
 
 /* ---------- language ---------- */
@@ -254,4 +236,4 @@ document.addEventListener("keydown", (event) => {
 });
 
 render();
-track("ha_variant_view", { forced: state.forced });
+track("ha_variant_view");
