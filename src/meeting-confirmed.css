@@ -1,0 +1,218 @@
+/* Meeting confirmation (/en/meeting-confirmed). Uses HumanAuthn tokens, logo, and footer. */
+
+body.va.page-confirm {
+	background: #f6f6f9;
+}
+
+.confirm {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	background:
+		radial-gradient(42% 36% at 50% 42%, rgba(106, 44, 245, 0.07), transparent 70%),
+		#f6f6f9;
+	color: var(--ink);
+}
+
+.confirm-header {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 72px;
+	background: #04041c;
+	flex-shrink: 0;
+}
+
+.confirm-header .va-logo:focus-visible,
+.confirm-foot .va-logo:focus-visible,
+.confirm-card a:focus-visible,
+.confirm-foot a:focus-visible {
+	outline: 2px solid var(--violet-400);
+	outline-offset: 3px;
+	border-radius: 6px;
+}
+
+.confirm-stage {
+	position: relative;
+	flex: 1;
+	display: grid;
+	place-items: center;
+	padding: 56px 24px;
+	overflow: hidden;
+}
+
+.confirm-float {
+	position: absolute;
+	border-radius: 50%;
+	overflow: hidden;
+	box-shadow: 0 12px 32px rgba(11, 10, 36, 0.14);
+	pointer-events: none;
+}
+
+.confirm-float img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.confirm-float--tr {
+	top: 11%;
+	right: 16%;
+	width: 76px;
+	height: 76px;
+}
+
+.confirm-float--ml {
+	top: 54%;
+	left: 12%;
+	width: 92px;
+	height: 92px;
+}
+
+.confirm-float--br {
+	bottom: 12%;
+	right: 18%;
+	width: 68px;
+	height: 68px;
+}
+
+.confirm-card {
+	position: relative;
+	z-index: 1;
+	width: min(440px, 100%);
+	padding: 48px 40px 40px;
+	border-radius: 24px;
+	background: var(--white);
+	box-shadow: 0 24px 60px rgba(13, 11, 74, 0.08);
+	text-align: center;
+}
+
+.confirm-icon {
+	display: grid;
+	place-items: center;
+	margin-bottom: 22px;
+}
+
+.confirm-card h1 {
+	font-family: var(--font-display);
+	font-size: 2rem;
+	font-weight: 700;
+	letter-spacing: -0.03em;
+	line-height: 1.15;
+	color: var(--ink);
+}
+
+.confirm-card p {
+	margin: 14px auto 0;
+	max-width: 34ch;
+	font-size: 1rem;
+	line-height: 1.55;
+	color: var(--muted);
+}
+
+.confirm-card p a {
+	color: var(--violet-600);
+	font-weight: 600;
+}
+
+.confirm-card p a:hover {
+	text-decoration: underline;
+}
+
+.confirm-home {
+	width: 100%;
+	margin-top: 28px;
+	min-height: 52px;
+	border-radius: 999px;
+	font-size: 16px;
+}
+
+.confirm-foot {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 32px;
+	width: 100%;
+	max-width: 1312px;
+	margin: 0 auto;
+	padding: 40px 32px 36px;
+}
+
+.confirm-foot__brand address,
+.confirm-foot__brand p,
+.confirm-foot__by {
+	margin: 10px 0 0;
+	font-style: normal;
+	font-size: 13px;
+	line-height: 1.45;
+	color: rgba(255, 255, 255, 0.72);
+}
+
+.confirm-foot__by {
+	margin: 0;
+	text-align: right;
+}
+
+.confirm-foot a {
+	color: #fff;
+	text-decoration: none;
+}
+
+.confirm-foot__by a {
+	font-weight: 600;
+}
+
+.confirm-foot__by a:hover {
+	color: var(--pink-300);
+}
+
+@media (max-width: 900px) {
+	.confirm-float--tr {
+		top: 16px;
+		right: -6px;
+		width: 58px;
+		height: 58px;
+	}
+
+	.confirm-float--ml {
+		top: auto;
+		bottom: 18px;
+		left: -10px;
+		width: 64px;
+		height: 64px;
+	}
+
+	.confirm-float--br {
+		display: none;
+	}
+}
+
+@media (max-width: 640px) {
+	.confirm-header {
+		height: 64px;
+	}
+
+	.confirm-stage {
+		padding: 36px 16px 48px;
+	}
+
+	.confirm-card {
+		padding: 36px 22px 28px;
+		border-radius: 20px;
+	}
+
+	.confirm-card h1 {
+		font-size: 1.75rem;
+	}
+
+	.confirm-foot {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 22px;
+		padding: 32px 16px 28px;
+	}
+
+	.confirm-foot__by {
+		text-align: left;
+	}
+}

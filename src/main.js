@@ -115,7 +115,7 @@ function track(event, data = {}) {
 
 /* ---------- rendering ---------- */
 
-const state = { ...resolveVariant(), lang: resolveLang() };
+let state;
 
 function modal(t) {
 	return `
@@ -272,5 +272,15 @@ document.addEventListener("keydown", (event) => {
 	}
 });
 
-render();
-track("ha_variant_view", { forced: state.forced });
+function bootLanding() {
+	state = { ...resolveVariant(), lang: resolveLang() };
+	render();
+	track("ha_variant_view", { forced: state.forced });
+}
+
+// Post-booking thank-you page. Skip the A/B split so this URL never rewrites to / or /?variant=b.
+if (window.location.pathname.replace(/\/+$/, "") === "/en/meeting-confirmed") {
+	import("./meeting-confirmed.js").then(({ mountMeetingConfirmed }) => mountMeetingConfirmed());
+} else {
+	bootLanding();
+}

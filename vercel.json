@@ -2,7 +2,19 @@
 	"cleanUrls": true,
 	"rewrites": [
 		{ "source": "/es", "destination": "/index.html" },
-		{ "source": "/en", "destination": "/index.html" }
+		{ "source": "/en", "destination": "/index.html" },
+		{ "source": "/en/meeting-confirmed", "destination": "/en/meeting-confirmed/index.html" },
+		{ "source": "/en/meeting-confirmed/", "destination": "/en/meeting-confirmed/index.html" }
+	],
+	"headers": [
+		{
+			"source": "/en/meeting-confirmed",
+			"headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+		},
+		{
+			"source": "/en/meeting-confirmed/",
+			"headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+		}
 	],
 	"redirects": [
 		{ "source": "/a", "destination": "/", "permanent": false },
