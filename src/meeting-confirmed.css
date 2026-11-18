@@ -119,6 +119,16 @@ body.va.page-confirm {
 	text-decoration: underline;
 }
 
+.confirm-switch {
+	margin-top: 16px;
+}
+
+.confirm-switch a {
+	color: var(--violet-600);
+	font-weight: 600;
+	font-size: 0.95rem;
+}
+
 .confirm-home {
 	width: 100%;
 	margin-top: 28px;

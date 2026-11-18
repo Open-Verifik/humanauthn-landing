@@ -278,9 +278,89 @@ function bootLanding() {
 	track("ha_variant_view", { forced: state.forced });
 }
 
-// Post-booking thank-you page. Skip the A/B split so this URL never rewrites to / or /?variant=b.
-if (window.location.pathname.replace(/\/+$/, "") === "/en/meeting-confirmed") {
-	import("./meeting-confirmed.js").then(({ mountMeetingConfirmed }) => mountMeetingConfirmed());
-} else {
-	bootLanding();
+function routePath() {
+	return window.location.pathname.replace(/\/+$/, "") || "/";
 }
+
+/** Path language wins over ?lang=, saved choice, and the browser language. */
+function bookMeetingLang(pathname = routePath()) {
+	if (pathname === "/en/book-meeting") return "en";
+	if (pathname === "/es/book-meeting") return "es";
+	return null;
+}
+
+function meetingConfirmedLang(pathname = routePath()) {
+	if (pathname === "/en/meeting-confirmed") return "en";
+	if (pathname === "/es/meeting-confirmed") return "es";
+	return null;
+}
+
+let landingBooted = false;
+
+function restoreLandingHead() {
+	document.body.classList.remove("page-book", "page-confirm");
+	document.documentElement.lang = state?.lang || "en";
+	const robots = document.querySelector('meta[name="robots"]');
+	if (robots && /noindex/i.test(robots.getAttribute("content") || "")) robots.remove();
+	document.querySelectorAll('link[rel="alternate"][hreflang]').forEach((el) => el.remove());
+	let canonical = document.querySelector('link[rel="canonical"]');
+	if (!canonical) {
+		canonical = document.createElement("link");
+		canonical.rel = "canonical";
+		document.head.appendChild(canonical);
+	}
+	canonical.href = "https://humanauthn.com/";
+	let ogUrl = document.querySelector('meta[property="og:url"]');
+	if (!ogUrl) {
+		ogUrl = document.createElement("meta");
+		ogUrl.setAttribute("property", "og:url");
+		document.head.appendChild(ogUrl);
+	}
+	ogUrl.setAttribute("content", "https://humanauthn.com/");
+}
+
+function showLanding() {
+	document.body.classList.remove("page-book", "page-confirm");
+	if (!landingBooted) {
+		landingBooted = true;
+		bootLanding();
+		return;
+	}
+	restoreLandingHead();
+	render();
+}
+
+function showRoute() {
+	const path = routePath();
+	const confirmedLang = meetingConfirmedLang(path);
+	const bookLang = bookMeetingLang(path);
+	const app = document.getElementById("app");
+	if (confirmedLang) {
+		if (app) app.innerHTML = "";
+		return import("./meeting-confirmed.js").then(({ mountMeetingConfirmed }) => mountMeetingConfirmed(confirmedLang));
+	}
+	if (bookLang) {
+		if (app) app.innerHTML = "";
+		return import("./book-meeting.js").then(({ mountBookMeeting }) => mountBookMeeting(bookLang));
+	}
+	return showLanding();
+}
+
+document.addEventListener("click", (event) => {
+	if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+	const link = event.target.closest("a[href]");
+	if (!link || link.target === "_blank" || link.hasAttribute("download")) return;
+	const url = new URL(link.href, window.location.href);
+	if (url.origin !== window.location.origin) return;
+	const path = url.pathname.replace(/\/+$/, "") || "/";
+	if (!meetingConfirmedLang(path) && !bookMeetingLang(path)) return;
+	event.preventDefault();
+	if (path === routePath()) return;
+	history.pushState(null, "", url.pathname + url.search + url.hash);
+	showRoute();
+});
+
+window.addEventListener("popstate", () => showRoute());
+
+// These routes skip the A/B rewrite and the saved/browser language so /en/ and /es/ stay as written.
+showRoute();
