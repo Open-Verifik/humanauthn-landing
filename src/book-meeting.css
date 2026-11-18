@@ -1,0 +1,88 @@
+/* Booking pages (/en/book-meeting and /es/book-meeting). Same chrome as the confirmation page. */
+
+body.va.page-book {
+	background: #f6f6f9;
+}
+
+body.page-book .confirm-stage {
+	display: block;
+	overflow: visible;
+	padding: 48px 20px 72px;
+}
+
+.book-card {
+	width: min(880px, 100%);
+	margin: 0 auto;
+	padding: 40px 28px 12px;
+	border-radius: 24px;
+	background: var(--white);
+	box-shadow: 0 24px 60px rgba(13, 11, 74, 0.08);
+	text-align: center;
+}
+
+.book-card h1 {
+	font-family: var(--font-display);
+	font-size: clamp(1.75rem, 3vw, 2.25rem);
+	font-weight: 700;
+	letter-spacing: -0.03em;
+	line-height: 1.15;
+	color: var(--ink);
+}
+
+.book-card .book-lead {
+	margin: 14px auto 0;
+	max-width: 36rem;
+	text-align: center;
+	text-wrap: balance;
+	font-size: 1rem;
+	line-height: 1.55;
+	color: var(--muted);
+}
+
+.book-card .book-switch {
+	margin: 16px 0 0;
+	max-width: none;
+	text-align: center;
+}
+
+.book-card .book-switch a {
+	color: var(--violet-600);
+	font-weight: 600;
+	font-size: 0.95rem;
+}
+
+.book-switch a:hover {
+	text-decoration: underline;
+}
+
+.book-card a:focus-visible {
+	outline: 2px solid var(--violet-400);
+	outline-offset: 3px;
+	border-radius: 6px;
+}
+
+.book-card .meetings-iframe-container {
+	width: 100%;
+	min-height: 680px;
+	margin-top: 8px;
+}
+
+.book-card .meetings-iframe-container iframe {
+	width: 100%;
+	max-width: 100%;
+}
+
+@media (max-width: 640px) {
+	body.page-book .confirm-stage {
+		padding: 28px 12px 48px;
+	}
+
+	.book-card {
+		padding: 28px 10px 8px;
+		border-radius: 20px;
+	}
+
+	.book-card .meetings-iframe-container {
+		min-height: 640px;
+	}
+}
