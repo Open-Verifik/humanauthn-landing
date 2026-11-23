@@ -337,8 +337,10 @@ export const LINKS = {
 /**
  * "See how it works" videos (YouTube ids). Spanish was shared by Johan on 2026-11-09.
  * English was shared by Johan on 2026-11-10.
+ * The Spanish id ends in a capital "I", not a lowercase "l": with "l" YouTube showed
+ * "Este vídeo no está disponible" (app.verifik.co#1178).
  */
 export const VIDEOS = {
-	es: "PQpyeU0Bgcl",
+	es: "PQpyeU0BgcI",
 	en: "ceJDAn1QoW8",
 };

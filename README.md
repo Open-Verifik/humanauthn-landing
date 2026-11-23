@@ -43,7 +43,7 @@ Page copy lives in `src/copyA.js` and `src/copyB.js`. Meta tags, links and video
 
 ## "See how it works" video
 
-YouTube ids in `VIDEOS` (`src/i18n.js`). Spanish: `PQpyeU0Bgcl`. English: `ceJDAn1QoW8`.
+YouTube ids in `VIDEOS` (`src/i18n.js`). Spanish: `PQpyeU0BgcI` (capital I at the end). English: `ceJDAn1QoW8`.
 
 ## Domains
 
