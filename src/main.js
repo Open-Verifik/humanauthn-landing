@@ -120,11 +120,13 @@ let state;
 function modal(t) {
 	return `
 	<div class="modal" data-modal hidden role="dialog" aria-modal="true" aria-label="${esc(t.how.videoTitle)}">
+		<span class="modal__sentinel" tabindex="0" data-focus-sentinel="start" aria-hidden="true"></span>
 		<div class="modal__backdrop" data-close-video></div>
 		<div class="modal__body">
 			<button type="button" class="modal__close" data-close-video aria-label="${esc(t.modal.close)}">${ICONS.close}</button>
 			<div class="modal__frame" data-frame></div>
 		</div>
+		<span class="modal__sentinel" tabindex="0" data-focus-sentinel="end" aria-hidden="true"></span>
 	</div>`;
 }
 
@@ -152,23 +154,90 @@ function render() {
 
 /* ---------- interactions ---------- */
 
-function openVideo() {
+let videoOpener = null;
+let focusReclaim = 0;
+
+function youtubeEmbedId(value) {
+	const id = String(value || "").trim();
+	return /^[A-Za-z0-9_-]{6,}$/.test(id) ? id : "";
+}
+
+function setPageInert(inert) {
 	const modalEl = document.querySelector("[data-modal]");
+	if (!modalEl?.parentElement) return;
+	for (const child of modalEl.parentElement.children) {
+		if (child !== modalEl) child.inert = inert;
+	}
+}
+
+function openVideo(opener) {
+	const modalEl = document.querySelector("[data-modal]");
+	if (!modalEl) return;
 	const frame = modalEl.querySelector("[data-frame]");
-	frame.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${videoId()}?autoplay=1&rel=0&hl=${state.lang}" title="${esc(
-		COPY[state.lang].how.videoTitle,
-	)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+	const requested = youtubeEmbedId(opener?.getAttribute?.("data-video-id"));
+	const id = requested || videoId();
+	const title = opener?.getAttribute?.("data-video-title") || COPY[state.lang].how.videoTitle;
+	const src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0&playsinline=1&hl=${encodeURIComponent(state.lang)}`;
+	frame.replaceChildren();
+	const iframe = document.createElement("iframe");
+	iframe.src = src;
+	iframe.title = title;
+	iframe.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+	iframe.allowFullscreen = true;
+	// Card films stay out of the tab order. A focused cross-origin player swallows Escape,
+	// so those dialogs keep focus on the close button and pull it back if the player takes it.
+	const cardFilm = Boolean(requested);
+	iframe.tabIndex = cardFilm ? -1 : 0;
+	frame.appendChild(iframe);
+	modalEl.setAttribute("aria-label", title);
+	videoOpener = opener && typeof opener.focus === "function" ? opener : null;
 	modalEl.hidden = false;
+	setPageInert(true);
 	document.body.classList.add("no-scroll");
 	modalEl.querySelector(".modal__close").focus();
+	window.clearInterval(focusReclaim);
+	focusReclaim = 0;
+	if (cardFilm) {
+		focusReclaim = window.setInterval(() => {
+			if (modalEl.hidden) return;
+			if (document.activeElement?.tagName === "IFRAME") modalEl.querySelector(".modal__close")?.focus();
+		}, 200);
+	}
 }
 
 function closeVideo() {
 	const modalEl = document.querySelector("[data-modal]");
 	if (!modalEl || modalEl.hidden) return;
-	modalEl.querySelector("[data-frame]").innerHTML = "";
+	window.clearInterval(focusReclaim);
+	focusReclaim = 0;
+	modalEl.querySelector("[data-frame]").replaceChildren();
 	modalEl.hidden = true;
+	setPageInert(false);
 	document.body.classList.remove("no-scroll");
+	const opener = videoOpener;
+	videoOpener = null;
+	if (opener && document.contains(opener)) opener.focus();
+}
+
+function trapModalFocus(event) {
+	if (event.key !== "Tab") return;
+	const modalEl = document.querySelector("[data-modal]");
+	if (!modalEl || modalEl.hidden) return;
+	const close = modalEl.querySelector(".modal__close");
+	const iframe = modalEl.querySelector("iframe");
+	const active = document.activeElement;
+	if (!close) return;
+	if (!iframe || iframe.tabIndex < 0) {
+		if (active === close) event.preventDefault();
+		return;
+	}
+	if (event.shiftKey && active === close) {
+		event.preventDefault();
+		iframe.focus();
+	} else if (!event.shiftKey && active === iframe) {
+		event.preventDefault();
+		close.focus();
+	}
 }
 
 function setLang(lang) {
@@ -253,7 +322,7 @@ document.addEventListener("click", (event) => {
 
 	if (target.dataset.track) track("ha_cta_click", { cta: target.dataset.track });
 	if (target.dataset.lang) setLang(target.dataset.lang);
-	if (target.hasAttribute("data-open-video")) openVideo();
+	if (target.hasAttribute("data-open-video")) openVideo(target);
 	if (target.hasAttribute("data-close-video")) closeVideo();
 
 	const menu = document.querySelector("[data-mobile-menu]");
@@ -266,10 +335,25 @@ document.addEventListener("click", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
+	if (event.key === "Tab") trapModalFocus(event);
 	if (event.key === "Escape") {
 		closeVideo();
 		closeDropdowns();
 	}
+});
+
+document.addEventListener("focusin", (event) => {
+	const modalEl = document.querySelector("[data-modal]");
+	if (!modalEl || modalEl.hidden) return;
+	const which = event.target?.getAttribute?.("data-focus-sentinel");
+	if (which === "end" || which === "start") {
+		const iframe = modalEl.querySelector("iframe");
+		const close = modalEl.querySelector(".modal__close");
+		if (which === "start" && iframe && iframe.tabIndex >= 0) iframe.focus();
+		else close?.focus();
+		return;
+	}
+	if (!modalEl.contains(event.target)) modalEl.querySelector(".modal__close")?.focus();
 });
 
 function bootLanding() {

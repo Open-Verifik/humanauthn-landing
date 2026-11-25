@@ -23,6 +23,7 @@ export const COPY_B = {
 			title1: "One person.",
 			title2: "Three ways to build trust.",
 			cta: "Simulate customer sign-in",
+			play: "Play video",
 			side: "Explore how HumanAuthn connects identity verification, access authentication, and personal data protection.",
 			cards: [
 				{
@@ -240,6 +241,7 @@ export const COPY_B = {
 			title1: "Una persona.",
 			title2: "Tres formas de generar confianza.",
 			cta: "Simula el ingreso de un cliente",
+			play: "Reproducir video",
 			side: "Descubre cómo HumanAuthn conecta la verificación de identidad, la autenticación de acceso y la protección de datos personales.",
 			cards: [
 				{
