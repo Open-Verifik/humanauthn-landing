@@ -56,8 +56,30 @@ function writeStorage(key, value) {
  * Visitors to / get a sticky 50/50 split (ha_variant cookie, 90 days); returning visitors keep their variant.
  * ?variant=a|b (and old links ?v=a|b, /a, /b) force a variant without saving it, so QA links don't skew the split.
  * The address bar is then rewritten to the structure above.
+ *
+ * /en and /es (optional trailing slash) are outside that split: always variant A, in that language.
+ * They never read or write ha_variant. ?variant=, ?v= and ?lang= on those paths are removed.
  */
+function localeHomeLang(pathname = window.location.pathname) {
+	const path = pathname.replace(/\/+$/, "") || "/";
+	if (path === "/en" || path === "/es") return path.slice(1);
+	return null;
+}
+
 function resolveVariant() {
+	if (localeHomeLang()) {
+		const url = new URL(window.location.href);
+		let changed = false;
+		for (const key of ["variant", "v", "lang"]) {
+			if (url.searchParams.has(key)) {
+				url.searchParams.delete(key);
+				changed = true;
+			}
+		}
+		if (changed) window.history.replaceState(null, "", url);
+		return { variant: "a", forced: true };
+	}
+
 	const url = new URL(window.location.href);
 	const fromQuery = (url.searchParams.get("variant") || url.searchParams.get("v") || "").toLowerCase();
 	const fromPath = url.pathname.replace(/\/+$/, "").split("/").pop()?.toLowerCase();
@@ -90,6 +112,9 @@ function resolveVariant() {
 /* ---------- language ---------- */
 
 function resolveLang() {
+	const locale = localeHomeLang();
+	if (locale) return locale;
+
 	const params = new URLSearchParams(window.location.search);
 	const fromQuery = (params.get("lang") || "").toLowerCase();
 	if (fromQuery === "es" || fromQuery === "en") return fromQuery;
@@ -145,6 +170,7 @@ function render() {
 	document.querySelector('meta[name="description"]')?.setAttribute("content", meta.description);
 	document.querySelector('meta[property="og:title"]')?.setAttribute("content", meta.title);
 	document.querySelector('meta[property="og:description"]')?.setAttribute("content", meta.description);
+	syncLandingSeo();
 
 	// Both variants follow the Figma file: A = "humanauthn.com V1.0 (A)", B = "humanauthn.com V1.0 (B)".
 	document.body.classList.add("va");
@@ -252,6 +278,16 @@ function setLang(lang) {
 	if (lang === state.lang) return;
 	state.lang = lang;
 	writeStorage(LANG_KEY, lang);
+	if (localeHomeLang()) {
+		track("ha_language_change");
+		const url = new URL(window.location.href);
+		url.pathname = `/${lang}`;
+		url.searchParams.delete("lang");
+		url.searchParams.delete("variant");
+		url.searchParams.delete("v");
+		window.location.assign(`${url.pathname}${url.search}${url.hash}`);
+		return;
+	}
 	const url = new URL(window.location.href);
 	url.searchParams.set("lang", lang);
 	window.history.replaceState(null, "", url);
@@ -389,26 +425,44 @@ function meetingConfirmedLang(pathname = routePath()) {
 
 let landingBooted = false;
 
-function restoreLandingHead() {
-	document.body.classList.remove("page-book", "page-confirm");
-	document.documentElement.lang = state?.lang || "en";
-	const robots = document.querySelector('meta[name="robots"]');
-	if (robots && /noindex/i.test(robots.getAttribute("content") || "")) robots.remove();
-	document.querySelectorAll('link[rel="alternate"][hreflang]').forEach((el) => el.remove());
-	let canonical = document.querySelector('link[rel="canonical"]');
-	if (!canonical) {
-		canonical = document.createElement("link");
-		canonical.rel = "canonical";
-		document.head.appendChild(canonical);
+const SITE = "https://humanauthn.com";
+
+function upsertHeadLink(rel, href, hreflang) {
+	const selector = hreflang ? `link[rel="${rel}"][hreflang="${hreflang}"]` : `link[rel="${rel}"]:not([hreflang])`;
+	let link = document.head.querySelector(selector);
+	if (!link) {
+		link = document.createElement("link");
+		link.rel = rel;
+		if (hreflang) link.hreflang = hreflang;
+		document.head.appendChild(link);
 	}
-	canonical.href = "https://humanauthn.com/";
+	link.href = href;
+}
+
+/** Locale homepages use their own canonical URL. / stays the primary canonical and the x-default. */
+function syncLandingSeo() {
+	const locale = localeHomeLang();
+	document.querySelectorAll('link[rel="alternate"][hreflang]').forEach((el) => el.remove());
+	const canonicalHref = locale ? `${SITE}/${locale}/` : `${SITE}/`;
+	upsertHeadLink("canonical", canonicalHref);
 	let ogUrl = document.querySelector('meta[property="og:url"]');
 	if (!ogUrl) {
 		ogUrl = document.createElement("meta");
 		ogUrl.setAttribute("property", "og:url");
 		document.head.appendChild(ogUrl);
 	}
-	ogUrl.setAttribute("content", "https://humanauthn.com/");
+	ogUrl.setAttribute("content", canonicalHref);
+	upsertHeadLink("alternate", `${SITE}/en/`, "en");
+	upsertHeadLink("alternate", `${SITE}/es/`, "es");
+	upsertHeadLink("alternate", `${SITE}/`, "x-default");
+}
+
+function restoreLandingHead() {
+	document.body.classList.remove("page-book", "page-confirm");
+	document.documentElement.lang = state?.lang || "en";
+	const robots = document.querySelector('meta[name="robots"]');
+	if (robots && /noindex/i.test(robots.getAttribute("content") || "")) robots.remove();
+	syncLandingSeo();
 }
 
 function showLanding() {
@@ -418,6 +472,8 @@ function showLanding() {
 		bootLanding();
 		return;
 	}
+	const locale = localeHomeLang();
+	if (locale) state = { ...state, variant: "a", forced: true, lang: locale };
 	restoreLandingHead();
 	render();
 }

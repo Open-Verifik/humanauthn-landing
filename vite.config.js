@@ -11,6 +11,8 @@ export default defineConfig({
 		rollupOptions: {
 			input: {
 				main: resolve(root, "index.html"),
+				homeEn: resolve(root, "en/index.html"),
+				homeEs: resolve(root, "es/index.html"),
 				meetingConfirmed: resolve(root, "en/meeting-confirmed/index.html"),
 				meetingConfirmedEs: resolve(root, "es/meeting-confirmed/index.html"),
 				bookMeetingEn: resolve(root, "en/book-meeting/index.html"),
