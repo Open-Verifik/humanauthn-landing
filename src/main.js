@@ -155,6 +155,7 @@ function render() {
 /* ---------- interactions ---------- */
 
 let videoOpener = null;
+let videoOpenedWithPointer = false;
 let focusReclaim = 0;
 
 function youtubeEmbedId(value) {
@@ -170,7 +171,7 @@ function setPageInert(inert) {
 	}
 }
 
-function openVideo(opener) {
+function openVideo(opener, viaPointer = false) {
 	const modalEl = document.querySelector("[data-modal]");
 	if (!modalEl) return;
 	const frame = modalEl.querySelector("[data-frame]");
@@ -191,6 +192,7 @@ function openVideo(opener) {
 	frame.appendChild(iframe);
 	modalEl.setAttribute("aria-label", title);
 	videoOpener = opener && typeof opener.focus === "function" ? opener : null;
+	videoOpenedWithPointer = Boolean(viaPointer);
 	modalEl.hidden = false;
 	setPageInert(true);
 	document.body.classList.add("no-scroll");
@@ -215,8 +217,14 @@ function closeVideo() {
 	setPageInert(false);
 	document.body.classList.remove("no-scroll");
 	const opener = videoOpener;
+	const viaPointer = videoOpenedWithPointer;
 	videoOpener = null;
-	if (opener && document.contains(opener)) opener.focus();
+	videoOpenedWithPointer = false;
+	if (!opener || !document.contains(opener)) return;
+	// A pointer open must not leave the card in its lifted state. Keyboard opens return
+	// focus with a visible ring (:focus-visible), including after Escape.
+	if (viaPointer) opener.blur();
+	else opener.focus({ focusVisible: true });
 }
 
 function trapModalFocus(event) {
@@ -322,7 +330,7 @@ document.addEventListener("click", (event) => {
 
 	if (target.dataset.track) track("ha_cta_click", { cta: target.dataset.track });
 	if (target.dataset.lang) setLang(target.dataset.lang);
-	if (target.hasAttribute("data-open-video")) openVideo(target);
+	if (target.hasAttribute("data-open-video")) openVideo(target, event.detail > 0);
 	if (target.hasAttribute("data-close-video")) closeVideo();
 
 	const menu = document.querySelector("[data-mobile-menu]");

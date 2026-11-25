@@ -42,6 +42,11 @@ body.no-scroll {
 	overflow: hidden;
 }
 
+/* The dialog covers the page. Keep the dimmed page from hovering or receiving clicks. */
+body.no-scroll #app > :not(.modal) {
+	pointer-events: none;
+}
+
 img {
 	max-width: 100%;
 	display: block;
@@ -806,11 +811,13 @@ p {
 .modal__backdrop {
 	position: absolute;
 	inset: 0;
+	z-index: 1;
 	background: rgba(7, 6, 26, 0.85);
 }
 
 .modal__body {
 	position: relative;
+	z-index: 2;
 	width: min(1000px, 100%);
 }
 

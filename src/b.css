@@ -188,8 +188,10 @@
 	transition: opacity 0.22s ease;
 }
 
-.vb-trio__card:hover,
-.vb-trio__card:focus-within {
+/* Hover only while the page can take the pointer. Keyboard focus uses :focus-visible,
+   so a click that returns focus does not leave the card purple. */
+body:not(.no-scroll) .vb-trio__card:hover,
+.vb-trio__card:has(.vb-trio__trigger:focus-visible) {
 	z-index: 1;
 	border-color: var(--a-violet);
 	box-shadow:
@@ -198,8 +200,8 @@
 	color: #fff;
 }
 
-.vb-trio__card:hover::before,
-.vb-trio__card:focus-within::before {
+body:not(.no-scroll) .vb-trio__card:hover::before,
+.vb-trio__card:has(.vb-trio__trigger:focus-visible)::before {
 	opacity: 1;
 }
 
@@ -211,8 +213,8 @@
 			box-shadow 0.22s ease;
 	}
 
-	.vb-trio__card:hover,
-	.vb-trio__card:focus-within {
+	body:not(.no-scroll) .vb-trio__card:hover,
+	.vb-trio__card:has(.vb-trio__trigger:focus-visible) {
 		transform: translateY(-6px);
 	}
 }
@@ -286,21 +288,30 @@
 	transition: color 0.22s ease;
 }
 
-.vb-trio__card:hover .vb-tag,
-.vb-trio__card:focus-within .vb-tag {
+body:not(.no-scroll) .vb-trio__card:hover .vb-tag,
+.vb-trio__card:has(.vb-trio__trigger:focus-visible) .vb-tag {
 	background: transparent;
 	border-color: rgba(255, 255, 255, 0.55);
 	color: #fff;
 }
 
-.vb-trio__card:hover > p,
-.vb-trio__card:focus-within > p {
+body:not(.no-scroll) .vb-trio__card:hover > p,
+.vb-trio__card:has(.vb-trio__trigger:focus-visible) > p {
 	color: #fff;
 }
 
-.vb-trio__card:hover .vb-trio__stage,
-.vb-trio__card:focus-within .vb-trio__stage {
+body:not(.no-scroll) .vb-trio__card:hover .vb-trio__stage,
+.vb-trio__card:has(.vb-trio__trigger:focus-visible) .vb-trio__stage {
 	background: transparent;
+}
+
+/* Drop the highlight immediately when the dialog opens, instead of fading out behind it. */
+body.no-scroll .vb-trio__card,
+body.no-scroll .vb-trio__card::before,
+body.no-scroll .vb-trio__card .vb-tag,
+body.no-scroll .vb-trio__card > p,
+body.no-scroll .vb-trio__stage {
+	transition: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -312,8 +323,8 @@
 		transition: none;
 	}
 
-	.vb-trio__card:hover,
-	.vb-trio__card:focus-within {
+	body:not(.no-scroll) .vb-trio__card:hover,
+	.vb-trio__card:has(.vb-trio__trigger:focus-visible) {
 		transform: none;
 	}
 }
