@@ -27,6 +27,8 @@ URL structure for the experiment:
 | --- | --- | --- |
 | A | `https://humanauthn.com/` | `https://humanauthn.com/` (primary) |
 | B | `https://humanauthn.com/?variant=b` | `https://humanauthn.com/` |
+| A, English | `https://humanauthn.com/en` | `https://humanauthn.com/en/` |
+| A, Spanish | `https://humanauthn.com/es` | `https://humanauthn.com/es/` |
 
 Both variants share the same meta title and description (`META` in `src/i18n.js`) and the same canonical URL.
 Visitors to `/` get a sticky 50/50 split (`ha_variant` cookie, 90 days), so returning visitors keep seeing the same
@@ -38,7 +40,10 @@ CTA clicks push `ha_cta_click` with the `cta` name. Add the GTM/GA4 snippet to `
 
 ## Language
 
-`?lang=es|en` → path `/es` or `/en` → saved choice → browser language. The toggle in the navbar saves the choice.
+`/en` and `/es` (with or without a trailing slash) are fixed homepages: variant A in that language.
+They do not read or write the `ha_variant` cookie, so the 50/50 split on `/` stays intact. `?variant=` and `?lang=` on those paths are ignored.
+On `/`, language resolves as `?lang=es|en` → saved choice → browser language, and the navbar toggle saves the choice.
+On `/en` and `/es` the path wins, and the toggle goes to the other locale URL.
 Page copy lives in `src/copyA.js` and `src/copyB.js`. Meta tags, links and video ids are in `src/i18n.js`.
 
 ## "See how it works" video
