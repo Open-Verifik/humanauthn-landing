@@ -81,6 +81,13 @@ function trioMock(card, i) {
 	</div>`;
 }
 
+/* Same film for both locales. Ids from the product walkthroughs (youtu.be). */
+const TRIO_VIDEOS = [
+	{ id: "eiAUv8hfUYU", track: "trio_digital_id" },
+	{ id: "-jbARDjta9s", track: "trio_private_data" },
+	{ id: "eTlGS9zsO_Y", track: "trio_customer_iam" },
+];
+
 function trio(t) {
 	const x = t.trio;
 	return `
@@ -96,15 +103,27 @@ function trio(t) {
 			</div>
 			<div class="va-grid3 vb-trio">
 				${x.cards
-					.map(
-						(c, i) => `
+					.map((c, i) => {
+						const video = TRIO_VIDEOS[i];
+						if (!video) {
+							return `
 					<article class="vb-trio__card">
 						<div class="vb-trio__stage">${trioMock(c, i)}</div>
 						<span class="vb-tag">${esc(c.tag)}</span>
 						<h3>${esc(c.title)}</h3>
 						<p>${esc(c.body)}</p>
-					</article>`,
-					)
+					</article>`;
+						}
+						return `
+					<article class="vb-trio__card">
+						<div class="vb-trio__stage">${trioMock(c, i)}</div>
+						<span class="vb-tag">${esc(c.tag)}</span>
+						<h3>
+							<button type="button" class="vb-trio__trigger" data-open-video data-video-id="${esc(video.id)}" data-video-title="${esc(c.title)}" data-track="${esc(video.track)}" aria-haspopup="dialog" aria-describedby="vb-trio-desc-${i}" aria-label="${esc(`${c.title.replace(/[.!?…\s]+$/, "")}. ${x.play}`)}">${esc(c.title)}</button>
+						</h3>
+						<p id="vb-trio-desc-${i}">${esc(c.body)}</p>
+					</article>`;
+					})
 					.join("")}
 			</div>
 		</div>
